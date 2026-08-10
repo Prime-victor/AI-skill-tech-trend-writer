@@ -2,3 +2,26 @@ echo "__pycache__/
 *.pyc
 .DS_Store
 .env" > .gitignore
+# --- Obsidian ---
+# Local UI/session state - noisy, not useful to share
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache/
+
+# Plugin code - reinstallable from the community plugin store, like node_modules
+.obsidian/plugins/*/main.js
+.obsidian/plugins/*/manifest.json
+.obsidian/plugins/*/styles.css
+
+# Plugin settings - can contain secrets (e.g. Local REST API key/cert)
+.obsidian/plugins/*/data.json
+
+# --- Node / npx / uv tooling ---
+node_modules/
+.npm-cache/
+.uv-cache/
+*.log
+
+# --- OS junk ---
+.DS_Store
+Thumbs.db
