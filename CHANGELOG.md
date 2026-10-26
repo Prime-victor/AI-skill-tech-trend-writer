@@ -1,5 +1,29 @@
 # Changelog
 
+## 2.6.0 — 2026-10-26
+
+The skill was tuned to one author's blog: a fixed posts path, a cover on every post, and a 3–5 minute cap. Those are now defaults the user can change, so it fits any Markdown site.
+
+### Added
+
+- "Site settings" in SKILL.md: settings come from the conversation, then project instructions, then the repo's existing posts, then the defaults. The skill asks once when the posts directory is still unclear.
+- `blog` mode in scripts/word_count.py (550–900 words), with a test. `portfolio` still works as an alias.
+- LICENSE (MIT).
+- examples/: a news/trend article and a firsthand draft with placeholders.
+- README: install notes for other agents, a site-settings table, and a License section.
+
+### Changed
+
+- Cover images are optional: drawn only when the author asks or the site's posts already have covers. Cover sizes and paths in references/cover-images.md are defaults, not rules.
+- Frontmatter follows the site's existing posts when there are any; references/output-format.md is the default schema.
+- "Portfolio repo" wording is now "blog repo" throughout.
+- The description leads with what the skill does and its no-invention rule.
+- The README installs the skill by cloning this repository straight into the skills folder.
+
+### Fixed
+
+- .gitignore contained a literal `echo` command instead of ignore patterns.
+
 ## 2.5.2 — 2026-10-23
 
 ### Changed

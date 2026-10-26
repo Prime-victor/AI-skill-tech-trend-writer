@@ -14,7 +14,7 @@ Before finalizing, verify each applicable item:
 - [ ] Units and precision are consistent down each table column, and computed cells (change, percentage, total) are arithmetically correct.
 - [ ] Figures in a table match the same figures in the prose.
 - [ ] Each table has a `Table:` title directly above it. Where it cites sources or needs a caveat, a `Sources:` or `Note:` caption sits directly below it, and the takeaway is a separate sentence after that.
-- [ ] The cover exists at `public/blog/<slug>.svg`, `image` points to it and `image_alt` describes it. Every label on it appears in the article, its background differs from the other posts' covers, and it reads at card size (references/cover-images.md).
+- [ ] If the post has a cover: the file exists at the site's cover path, `image` points to it and `image_alt` describes it. Every label on it appears in the article, its background differs from the other posts' covers, and it reads at card size (references/cover-images.md).
 
 ## Firsthand posts (Mode B)
 

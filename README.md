@@ -1,6 +1,8 @@
 # Tech Trend Writer
 
-A Claude Skill for writing developer-blog and portfolio articles. It works in two modes.
+An agent skill that researches, drafts, fact-checks and formats developer-blog and portfolio articles. It works in two modes, and it never makes up facts or experiences to fill a gap.
+
+See [`examples/`](examples/) for one finished article in each mode.
 
 | Aspect | Mode A: News/trend | Mode B: Firsthand/evergreen |
 | --- | --- | --- |
@@ -20,6 +22,7 @@ If a request does not make the mode obvious, Claude asks one question and procee
 - `assets/`: article templates for each mode, headline formulas, and a worked Mode B outline
 - `scripts/`: frontmatter validation, table checking, link checking, and word counts (Python 3 standard library only)
 - `tests/`: `unittest` suites for the scripts
+- `examples/`: a sample article in each mode
 
 ## Install
 
@@ -38,6 +41,15 @@ Update later with `git pull` inside that folder.
 Claude apps: download this repository as a ZIP, rename the extracted folder to `tech-trend-writer`, zip it again, and upload it as a skill in settings.
 
 Restart or reload Claude afterwards if the skill does not appear. The scripts need Python 3.10 or later and no other packages.
+
+### Other agents
+
+Claude Code and the Claude apps are the tested platforms. The skill is a plain SKILL.md folder, so it also works in other agents:
+
+- **Agents that support SKILL.md skills:** clone or copy this repository into that agent's skills directory as `tech-trend-writer`. The path differs by agent, so check its documentation.
+- **Agents without skills support:** add one line to the agent's project instructions (its rules or AGENTS.md file), for example: "When asked to write an article or blog post, follow `path/to/tech-trend-writer/SKILL.md`."
+
+Wherever you install it, news/trend mode needs an agent with web search, and the scripts need Python 3.10 or later.
 
 ## Use
 
@@ -63,11 +75,20 @@ Claude first asks for whatever is missing from: your thesis in one sentence, wha
 
 ## Output
 
-Portfolio posts are Markdown files with YAML frontmatter, saved in your portfolio repo and versioned in git. There is no database and no dashboard editor.
+Blog posts are Markdown files with YAML frontmatter, saved in your blog repo and versioned in git. There is no database and no dashboard editor.
 
-- Default path: `content/posts/<slug>.md`. Tell Claude if your site keeps posts elsewhere.
-- Frontmatter: `title, slug, date, tags, summary, status, repo_url`, and optionally `canonical_url`.
-- New posts are saved as `status: draft`. You change it to `published`.
+The skill adapts to your site. It checks, in order: what you say in the conversation, your project instructions (CLAUDE.md, AGENTS.md or similar), and how your existing posts are set up. It uses the defaults below only when none of those settle a setting.
+
+| Setting | Default |
+| --- | --- |
+| Posts directory | `content/posts/<slug>.md` (Astro, Jekyll and other layouts are picked up from your repo) |
+| Frontmatter | `title, slug, date, tags, summary, status, repo_url`, optional `canonical_url`, or whatever your existing posts use |
+| Length | 3–5 minute read (`--mode blog`); give your own range any time |
+| Cover image | None. Ask for one, or have covers on your existing posts, and it draws an SVG cover |
+
+To set these once, put them in your project instructions, for example: "Blog posts go in `src/content/blog/`, 1200–1800 words, no cover images."
+
+New posts are saved as `status: draft`. You change it to `published`.
 
 Field rules are in `references/output-format.md`.
 
@@ -101,9 +122,9 @@ Also fail any URL that does not appear in a saved export of research results:
 
 Check length against the default range for a mode or structure:
 
-    python scripts/word_count.py content/posts/my-post.md --mode portfolio
+    python scripts/word_count.py content/posts/my-post.md --mode blog
 
-Frontmatter and fenced code blocks are not counted. Modes: `news` 800–1200, `brief` 300–600, `roundup` 800–1200, `deep-dive` 1500–2500, `firsthand` 1000–1800, `build-log` 1000–1800, `lessons-learned` 900–1500, `opinion` 700–1200, `explainer` 1200–2000, `experiment` 1000–1800.
+Frontmatter and fenced code blocks are not counted. Modes: `news` 800–1200, `brief` 300–600, `roundup` 800–1200, `deep-dive` 1500–2500, `firsthand` 1000–1800, `build-log` 1000–1800, `lessons-learned` 900–1500, `opinion` 700–1200, `explainer` 1200–2000, `experiment` 1000–1800, `blog` 550–900 (alias `portfolio`).
 
 Use your own range instead (this overrides `--mode`):
 
@@ -124,3 +145,7 @@ The link-checker tests start a temporary server on localhost and do not reach th
 - Here are my token counts before and after I restructured my prompts. Write the experiment post.
 - I have three lessons from shipping my first Chrome extension. Turn them into a post.
 - Outline a post called "How I built a Claude skill for writing tech articles" and mark what I need to fill in.
+
+## License
+
+MIT. See [LICENSE](LICENSE).

@@ -43,7 +43,7 @@ Do not use a table for a one-dimensional list (use bullets), for two items with 
 - Keep cells short: a value or a phrase, not a paragraph.
 - Use plain column headers of one to three words.
 - Right-align numeric columns with `---:` so digits line up.
-- Put the sources in a caption: one paragraph directly under the table that starts with `Sources:` (or `Source:`, or `Note:` for a caveat about how a row was measured). The portfolio blog renders that paragraph as a small caption attached to the table. Keep it to who supplied which column or row.
+- Put the sources in a caption: one paragraph directly under the table that starts with `Sources:` (or `Source:`, or `Note:` for a caveat about how a row was measured). Many blog themes can style that paragraph as a small caption attached to the table; where the site does not, it still reads as a plain source line. Keep it to who supplied which column or row.
 - After the caption, write one or two sentences of ordinary prose that say what the reader should take from the table. Do not mix the takeaway into the caption, and do not repeat every cell in prose.
 
 ## Markdown rules

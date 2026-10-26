@@ -1,10 +1,11 @@
 ---
 name: tech-trend-writer
 description: >-
-  Write developer-blog and portfolio articles in two modes. News/trend mode: rigorously
+  Research, draft, fact-check and format developer-blog and portfolio articles in two modes,
+  without ever inventing facts or experiences. News/trend mode: rigorously
   sourced articles, newsletter pieces, LinkedIn posts, and roundups about recent technology
   trends, product launches, AI news, and industry updates. Firsthand/evergreen mode:
-  portfolio posts built from the author's own work, such as project write-ups, build logs,
+  blog posts built from the author's own work, such as project write-ups, build logs,
   "how I built X" posts, lessons learned, personal-data experiments with before/after
   numbers, opinion pieces, and explainers. Use this skill eagerly for any request that
   resembles "write an article about...", "cover the latest in...", "tech roundup",
@@ -39,7 +40,7 @@ State the chosen mode in one line before starting.
 3. Before drafting, open references/article-structures.md to select a shape suited to the request, then open assets/article-template.md and build a concise outline from it. Decide now whether the piece needs a table (references/tables.md) and list the cells it requires, so research collects a sourced value for each one.
 4. Draft from that outline. Open and follow references/style-guide.md while writing. Use assets/headline-formulas.md when proposing or selecting a headline. Fill every table cell with a specific, sourced value; never leave a cell blank or fill it from memory.
 5. Open references/fact-check-checklist.md and run every applicable check against the finished draft; revise before presenting it.
-6. Optionally run scripts/link_checker.py on the Markdown file to detect broken cited links. Pass --search-results with a saved search-results export to also verify that cited URLs came from research rather than being fabricated. Run scripts/table_check.py when the article contains or should contain a table. Run scripts/word_count.py with `--mode portfolio` for a post saved to the portfolio repo, or `--mode news` (or `brief`, `roundup`, `deep-dive`) for other destinations; `--target MIN-MAX` overrides both.
+6. Optionally run scripts/link_checker.py on the Markdown file to detect broken cited links. Pass --search-results with a saved search-results export to also verify that cited URLs came from research rather than being fabricated. Run scripts/table_check.py when the article contains or should contain a table. Run scripts/word_count.py with `--mode blog` for a post saved to the blog repo, or `--mode news` (or `brief`, `roundup`, `deep-dive`) for other destinations; `--target MIN-MAX` overrides both.
 7. Save the final article as a Markdown file (see Output below), include a source list, and present the finished article or its saved path to the user.
 
 ## Mode B workflow: firsthand/evergreen
@@ -59,7 +60,7 @@ State the chosen mode in one line before starting.
 4. Draft in the first person: concrete and specific, in the author's voice. Follow the firsthand section of references/style-guide.md and all of references/voice.md: open with a real moment, take two or three stances where the reader wants a recommendation, show one real artifact, vary section length, and read it aloud. Mine the conversation, the author's files and git history for real material before writing a placeholder. The ban on hype language applies in full.
 5. Fact-check. Run references/fact-check-checklist.md, including its firsthand section, against the draft. Do not silently trust author-supplied figures: end your reply (outside the post body) with a short "Author-supplied, unverified" checklist naming each figure, plus a list of every remaining placeholder.
 6. Save the post as a Markdown file (see Output below) with `status: draft`.
-7. Run scripts/frontmatter_check.py, scripts/table_check.py, and scripts/link_checker.py on the saved file, and scripts/word_count.py with `--mode portfolio` (the structure's own `--mode` only when the post is not for the portfolio blog). Fix what they report, then present the post or its path to the author.
+7. Run scripts/frontmatter_check.py, scripts/table_check.py, and scripts/link_checker.py on the saved file, and scripts/word_count.py with `--mode blog` (the structure's own `--mode` only when the post is not for the portfolio blog). Fix what they report, then present the post or its path to the author.
 
 ## Sourcing and citations
 
@@ -69,15 +70,37 @@ State the chosen mode in one line before starting.
 - Prefer sources published within the relevant recency window; label older context as background when it is needed.
 - Distinguish a verified fact from analysis, forecast, or opinion. Resolve material disagreements with the newest authoritative source or disclose the uncertainty.
 
+## Site settings
+
+Every site is different. Before saving the first post in a session, work out the author's settings in this order, and use the default only when nothing else says otherwise:
+
+1. What the author says in the conversation.
+2. Project instructions that state them (for example CLAUDE.md, AGENTS.md, or the agent's rules file).
+3. The repo itself: where existing posts live, which frontmatter fields they use, and whether they have cover images.
+4. The defaults below.
+
+If none of 1–3 settles the posts directory and the post is going into a site repo, ask once, then proceed.
+
+| Setting | Default | Common alternatives |
+| --- | --- | --- |
+| Posts directory | `content/posts/<slug>.md` | `src/content/blog/` (Astro), `_posts/YYYY-MM-DD-<slug>.md` (Jekyll), `posts/` |
+| Frontmatter | The fields in references/output-format.md | Whatever the site's existing posts use |
+| Length | 3–5 minute read (`word_count.py --mode blog`) | The author's own range via `--target MIN-MAX` |
+| Cover image | None | A drawn SVG cover (references/cover-images.md) when the author asks or existing posts have covers; an author-supplied image |
+| Cover path | `public/blog/<slug>.svg`, `image: /blog/<slug>.svg` | Wherever existing covers live |
+
+State the settings you are using in one line when they come from a default rather than the author or the repo.
+
 ## Output
 
-Portfolio posts are Markdown files with YAML frontmatter, kept in the portfolio repo and versioned in git. Do not write to a database or assume a dashboard editor.
+Blog posts are Markdown files with YAML frontmatter, kept in the author's site repo and versioned in git. Do not write to a database or assume a dashboard editor.
 
-- Default path: `content/posts/<slug>.md`. Use a different directory when the user names one or the repo already has its own convention.
-- Frontmatter fields, in order: `title, slug, date, tags, summary, status, repo_url, canonical_url` (the last is optional). New posts are `status: draft`; only the author publishes.
-- Skip frontmatter for newsletter, LinkedIn, or other non-portfolio destinations.
-- Length: a portfolio post is a 3–5 minute read whatever its structure. Check it with `scripts/word_count.py --mode portfolio` and cut to fit before hand-off; references/article-structures.md says what to cut. Use the longer per-structure ranges only for other destinations or when the author asks for a long read.
-- Reading experience: follow the portfolio section of references/style-guide.md (hook, headings, one scannable element per screen). Draw the post's cover illustration to references/cover-images.md, save it as `public/blog/<slug>.svg`, and set `image: /blog/<slug>.svg` with an `image_alt` description; use an author-supplied image instead when there is one.
+- Path: the posts directory from Site settings. New posts are `status: draft` (or the site's draft equivalent); only the author publishes.
+- Frontmatter: match the site's existing posts. With no existing posts, use `title, slug, date, tags, summary, status, repo_url, canonical_url` (the last is optional).
+- Skip frontmatter for newsletter, LinkedIn, or other non-blog destinations.
+- Length: check it with `scripts/word_count.py` using the length from Site settings and cut to fit before hand-off; references/article-structures.md says what to cut.
+- Reading experience: follow the blog section of references/style-guide.md (hook, headings, one scannable element per screen).
+- Cover: only when Site settings call for one. Draw it to references/cover-images.md, or use the author's image. Never invent an image URL.
 
 Open references/output-format.md for field rules and path details.
 
@@ -88,12 +111,12 @@ Python 3 standard library only. Each exits non-zero when it finds a problem.
 - `python scripts/frontmatter_check.py <post.md>`: required fields, slug, date, and status values. Leftover `[AUTHOR TO FILL` placeholders are a warning in a draft and an error when `status: published`.
 - `python scripts/table_check.py <post.md> [--require-table]`: empty or filler cells, rows that do not match the header, and missing separator rows.
 - `python scripts/link_checker.py <post.md> [--timeout 10] [--search-results <file>]`: reports redirects, 4xx, 5xx, and timeouts separately.
-- `python scripts/word_count.py <post.md> --mode <name>`: counts prose only (no frontmatter or code blocks). Modes and their default ranges are listed in references/article-structures.md; `portfolio` is the 3–5 minute cap for posts on the blog.
+- `python scripts/word_count.py <post.md> --mode <name>`: counts prose only (no frontmatter or code blocks). Modes and their default ranges are listed in references/article-structures.md; `blog` is the default 3–5 minute cap for blog posts (`portfolio` is an alias).
 
 ## Resource pointers
 
-- Open references/output-format.md before saving a post to the portfolio repo.
-- Open references/cover-images.md before drawing a post's cover illustration.
+- Open references/output-format.md before saving a post to the blog repo.
+- Open references/cover-images.md only when the post gets a drawn cover (see Site settings).
 - Open references/tables.md while outlining any post that compares items or reports numbers, and again before filling a table.
 - Open references/article-structures.md before outlining to choose a structure for the chosen mode.
 - Open references/style-guide.md before drafting or revising for voice and formatting rules.

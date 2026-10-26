@@ -1,6 +1,6 @@
 # Voice: write it the way the author would say it
 
-Every portfolio post should read like an engineer telling a colleague what they found, not like product documentation. Accurate and well structured is the floor. A person has to be in it.
+Every blog post should read like an engineer telling a colleague what they found, not like product documentation. Accurate and well structured is the floor. A person has to be in it.
 
 Apply this file to every Mode B draft, to the firsthand parts of a Mode A piece, and to any request to revise a post so it "sounds like me", "sounds less like AI", or "reads less like docs".
 

@@ -18,11 +18,13 @@ These are the ranges scripts/word_count.py applies with `--mode`. They count pro
 | Opinion / argument | `opinion` | 700–1200 |
 | Evergreen explainer | `explainer` | 1200–2000 |
 | Data-driven personal experiment | `experiment` | 1000–1800 |
-| Any post saved to the portfolio blog | `portfolio` | 550–900 |
+| Any post saved to a blog repo (default cap) | `blog` (alias `portfolio`) | 550–900 |
 
-### Portfolio posts are capped at a 3–5 minute read
+### Blog posts default to a 3–5 minute read
 
-A post saved to the portfolio repo uses `--mode portfolio` whatever its structure. The structure still decides the sections; the cap decides how much goes in each. The blog shows reading time as total body words divided by 200, and it counts code blocks, tables, and the Sources list, which word_count.py does not. 550–900 prose words lands at 3–5 minutes on the page. The longer ranges above are for newsletters and other destinations, or for when the author asks for a long read.
+By default, a post saved to a blog repo uses `--mode blog` whatever its structure. The structure still decides the sections; the cap decides how much goes in each. Most blogs estimate reading time as total body words divided by about 200, including code blocks, tables, and the Sources list, which word_count.py does not count. 550–900 prose words lands at roughly 3–5 minutes on the page.
+
+This cap is a default, not a rule. When the author's site settings give a different length, or the author asks for a long read, pass it with `--target MIN-MAX` or use the structure's own `--mode`. The longer ranges above also apply to newsletters and other destinations.
 
 To fit a structure into the cap:
 

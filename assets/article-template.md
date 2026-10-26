@@ -9,7 +9,7 @@ repo_url: ""
 canonical_url: ""
 ---
 
-<!-- Frontmatter is for posts saved to the portfolio repo. Delete the block above for newsletter, LinkedIn, or other destinations. See references/output-format.md. -->
+<!-- Frontmatter is for posts saved to the blog repo. Delete the block above for newsletter, LinkedIn, or other destinations. See references/output-format.md. -->
 
 # [Headline]
 
