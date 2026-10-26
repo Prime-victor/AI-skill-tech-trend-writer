@@ -1,150 +1,65 @@
-# Tech Trend Writer
+# Tech Writer Lite
 
-An agent skill that researches, drafts, fact-checks and formats developer-blog and portfolio articles. It works in two modes, and it never makes up facts or experiences to fill a gap.
+A free agent skill that turns recent tech news into a sourced, fact-checked article. It researches the last 1–4 weeks from primary sources, picks a structure, drafts, runs a fact-check pass, and cites every claim.
 
-See [`examples/`](examples/) for one finished article in each mode.
-
-| Aspect | Mode A: News/trend | Mode B: Firsthand/evergreen |
-| --- | --- | --- |
-| Subject | What other people recently shipped or announced | Your own project, data, experience, or opinion; timeless explainers |
-| Who supplies the substance | Research (last 1–4 weeks by default) | You: thesis, what you did, real numbers, what went wrong |
-| What Claude does | Research, outline, draft, fact-check, link-check | Intake questions, supporting research, structure, fact-check, polish |
-| Structures | Breaking-news brief, roundup, deep-dive | Build log, lessons learned, opinion, evergreen explainer, data-driven experiment |
-
-In Mode B, Claude never invents experiences, metrics, quotes, or outcomes. Anything you have not supplied appears in the draft as `[AUTHOR TO FILL: ...]`, and every figure you did supply is listed back to you as "author-supplied, unverified" so you can confirm it before publishing.
-
-If a request does not make the mode obvious, Claude asks one question and proceeds.
-
-## What it includes
-
-- `SKILL.md`: mode selection and both workflows
-- `references/`: article structures and length targets, style guide, table guidance, cover image guidance, fact-check checklist, output format
-- `assets/`: article templates for each mode, headline formulas, and a worked Mode B outline
-- `scripts/`: frontmatter validation, table checking, link checking, and word counts (Python 3 standard library only)
-- `tests/`: `unittest` suites for the scripts
-- `examples/`: a sample article in each mode
+See [`examples/`](examples/) for a finished article.
 
 ## Install
 
-The installed folder name must match the skill name, `tech-trend-writer`. This repository *is* the skill folder, so clone it under that name.
+The installed folder name must match the skill name, `tech-writer-lite`. This repository is the skill folder, so clone it under that name.
 
 Claude Code, for all your projects:
 
-    git clone https://github.com/Prime-victor/AI-skill-tech-trend-writer.git ~/.claude/skills/tech-trend-writer
+    git clone https://github.com/Prime-victor/AI-skill-tech-trend-writer.git ~/.claude/skills/tech-writer-lite
 
 Claude Code, for one project (run from that project's root):
 
-    git clone https://github.com/Prime-victor/AI-skill-tech-trend-writer.git .claude/skills/tech-trend-writer
+    git clone https://github.com/Prime-victor/AI-skill-tech-trend-writer.git .claude/skills/tech-writer-lite
 
 Update later with `git pull` inside that folder.
 
-Claude apps: download this repository as a ZIP, rename the extracted folder to `tech-trend-writer`, zip it again, and upload it as a skill in settings.
+Claude apps: download this repository as a ZIP, rename the extracted folder to `tech-writer-lite`, zip it again, and upload it as a skill in settings.
 
-Restart or reload Claude afterwards if the skill does not appear. The scripts need Python 3.10 or later and no other packages.
+Other agents that support SKILL.md skills: copy the folder into that agent's skills directory as `tech-writer-lite`.
 
-### Other agents
-
-Claude Code and the Claude apps are the tested platforms. The skill is a plain SKILL.md folder, so it also works in other agents:
-
-- **Agents that support SKILL.md skills:** clone or copy this repository into that agent's skills directory as `tech-trend-writer`. The path differs by agent, so check its documentation.
-- **Agents without skills support:** add one line to the agent's project instructions (its rules or AGENTS.md file), for example: "When asked to write an article or blog post, follow `path/to/tech-trend-writer/SKILL.md`."
-
-Wherever you install it, news/trend mode needs an agent with web search, and the scripts need Python 3.10 or later.
+The skill needs an agent with web search.
 
 ## Use
 
 Ask in natural language. The skill triggers on its own.
 
-### Mode A: news/trend
-
 - Write an article about recent AI coding-agent launches.
 - Cover the latest in enterprise cybersecurity.
+- Give me a 400-word brief on yesterday's framework release.
 - Create a weekly tech roundup for a startup newsletter.
 
-Claude researches the preceding 1–4 weeks unless you give a different period, then drafts, fact-checks, and returns a sourced Markdown article.
+## What's inside
 
-### Mode B: firsthand/evergreen
+- `SKILL.md`: the workflow and sourcing rules
+- `references/`: article structures and length targets, style guide, fact-check checklist
+- `assets/`: article template and headline formulas
+- `scripts/word_count.py`: checks length against each structure's range (Python 3.10+, no packages)
+- `tests/`: `unittest` suite for the script
 
-- Write up how I built my invoice parser. The repo is at <url> and here are my notes.
-- Turn these notes into a "what I learned" post about migrating from REST to gRPC.
-- I cut my Claude token usage from 41k to 17k tokens per run. Help me write the post. Here are my before/after logs.
-- I think most side projects don't need a database. Help me argue that in a blog post.
-- Write an explainer on how prompt caching works, using my chatbot project as the example.
+Check an article's length:
 
-Claude first asks for whatever is missing from: your thesis in one sentence, what you actually did, real numbers, what went wrong or surprised you, and links to the repo or demo. You can answer briefly or say "draft it anyway" and fill the placeholders afterwards.
+    python scripts/word_count.py article.md --mode news
+    python scripts/word_count.py article.md --target 800-1200
 
-## Output
-
-Blog posts are Markdown files with YAML frontmatter, saved in your blog repo and versioned in git. There is no database and no dashboard editor.
-
-The skill adapts to your site. It checks, in order: what you say in the conversation, your project instructions (CLAUDE.md, AGENTS.md or similar), and how your existing posts are set up. It uses the defaults below only when none of those settle a setting.
-
-| Setting | Default |
-| --- | --- |
-| Posts directory | `content/posts/<slug>.md` (Astro, Jekyll and other layouts are picked up from your repo) |
-| Frontmatter | `title, slug, date, tags, summary, status, repo_url`, optional `canonical_url`, or whatever your existing posts use |
-| Length | 3–5 minute read (`--mode blog`); give your own range any time |
-| Cover image | None. Ask for one, or have covers on your existing posts, and it draws an SVG cover |
-
-To set these once, put them in your project instructions, for example: "Blog posts go in `src/content/blog/`, 1200–1800 words, no cover images."
-
-New posts are saved as `status: draft`. You change it to `published`.
-
-Field rules are in `references/output-format.md`.
-
-## Scripts
-
-Run these from the skill folder (the repository root). Each exits non-zero when it finds a problem, so they can be used in a pre-commit hook or CI.
-
-Validate frontmatter and find leftover placeholders:
-
-    python scripts/frontmatter_check.py content/posts/my-post.md
-
-It checks required fields, slug format (lowercase with hyphens), date format (`YYYY-MM-DD`), and status (`draft` or `published`). Leftover `[AUTHOR TO FILL` placeholders are a warning in a draft and an error in a published post.
-
-Check that tables are well formed and fully populated:
-
-    python scripts/table_check.py content/posts/my-post.md
-    python scripts/table_check.py content/posts/my-post.md --require-table
-
-It fails on empty cells, filler such as `-`, `N/A`, or `TBD`, rows whose cell count differs from the header, and a header with no separator row. It warns about one-row tables, tables wider than six columns, a missing blank line before a table, and cells that still hold an `[AUTHOR TO FILL` placeholder. `--require-table` also fails a post that has no table at all.
-
-Check every HTTP(S) link in a post:
-
-    python scripts/link_checker.py content/posts/my-post.md
-    python scripts/link_checker.py content/posts/my-post.md --timeout 20
-
-It tries `HEAD`, falls back to `GET`, follows redirects and reports the final URL and number of hops, and reports 4xx, 5xx, timeouts, and connection errors separately. This is the only script that uses the network.
-
-Also fail any URL that does not appear in a saved export of research results:
-
-    python scripts/link_checker.py path/to/article.md --search-results path/to/search-results.md
-
-Check length against the default range for a mode or structure:
-
-    python scripts/word_count.py content/posts/my-post.md --mode blog
-
-Frontmatter and fenced code blocks are not counted. Modes: `news` 800–1200, `brief` 300–600, `roundup` 800–1200, `deep-dive` 1500–2500, `firsthand` 1000–1800, `build-log` 1000–1800, `lessons-learned` 900–1500, `opinion` 700–1200, `explainer` 1200–2000, `experiment` 1000–1800, `blog` 550–900 (alias `portfolio`).
-
-Use your own range instead (this overrides `--mode`):
-
-    python scripts/word_count.py content/posts/my-post.md --target 800-1200
-
-## Tests
+Run the tests:
 
     python -m unittest discover -s tests -v
 
-The link-checker tests start a temporary server on localhost and do not reach the internet.
+## Want more?
 
-## Try asking
+**Tech Writer Pro** adds:
 
-- Write a deep-dive on what this month's model releases mean for small dev teams.
-- Compare this month's three big model releases in a table, then tell me what changed.
-- Give me a 400-word brief on yesterday's framework release.
-- Help me write a build log for my portfolio about this repo.
-- Here are my token counts before and after I restructured my prompts. Write the experiment post.
-- I have three lessons from shipping my first Chrome extension. Turn them into a post.
-- Outline a post called "How I built a Claude skill for writing tech articles" and mark what I need to fill in.
+- **A firsthand mode** for build logs, lessons learned and portfolio posts written from your own work. It never invents a fact or an experience, and leaves visible `[AUTHOR TO FILL]` gaps for you instead.
+- **A voice guide** so first-person posts sound like you, not like documentation.
+- **Site settings** for your blog's folder, frontmatter, length and cover images.
+- **Validation scripts** for frontmatter, tables and links, including a check that flags made-up URLs.
+
+Find it on Agensi: [Tech Writer Pro](https://www.agensi.io/creators/victor-kiptum).
 
 ## License
 

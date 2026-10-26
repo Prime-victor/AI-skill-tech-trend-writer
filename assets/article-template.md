@@ -1,16 +1,3 @@
----
-title: "[Headline]"
-slug: headline-in-lowercase-with-hyphens
-date: YYYY-MM-DD
-tags: [tag-one, tag-two]
-summary: "[One sentence that names the development and the reader benefit.]"
-status: draft
-repo_url: ""
-canonical_url: ""
----
-
-<!-- Frontmatter is for posts saved to the blog repo. Delete the block above for newsletter, LinkedIn, or other destinations. See references/output-format.md. -->
-
 # [Headline]
 
 *Dek: [One sentence that names the development and the reader benefit.]*
@@ -29,7 +16,7 @@ canonical_url: ""
 
 [Add corroborating developments, constraints, and differing views.]
 
-<!-- Optional comparison table. Keep it when the piece compares three or more items; delete it otherwise. Every cell needs a sourced value. See references/tables.md. -->
+<!-- Optional comparison table. Keep it when the piece compares three or more items; delete it otherwise. Every cell needs a sourced value. -->
 
 Table: [What the table shows, in at most twelve words, no full stop]
 
