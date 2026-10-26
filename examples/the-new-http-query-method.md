@@ -1,13 +1,3 @@
----
-title: "The New HTTP QUERY Method: What RFC 10008 Changes for API Design"
-slug: the-new-http-query-method
-date: 2026-08-10
-tags: [http, api-design, standards]
-summary: "QUERY gives HTTP a standard way to send request bodies for read-only operations, reducing the long-running GET-vs-POST workaround problem for complex queries."
-status: draft
-repo_url: ""
----
-
 # The New HTTP QUERY Method: What RFC 10008 Changes for API Design
 
 In June 2026, the IETF published RFC 10008, which standardizes a new HTTP method: `QUERY`. The goal is practical: let clients send query input in the request body while keeping the operation explicitly **safe** and **idempotent**. In plain terms, `QUERY` gives teams a standards-based alternative when URL query strings are too long or awkward, but using `POST` for read operations creates semantic and caching ambiguity.
