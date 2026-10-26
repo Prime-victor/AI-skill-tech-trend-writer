@@ -120,6 +120,11 @@ class CliTests(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("above target range", output)
 
+    def test_blog_mode_matches_portfolio_alias(self):
+        self.assertEqual(wc.MODE_TARGETS["blog"], wc.MODE_TARGETS["portfolio"])
+        self.assertEqual(self.run_main("word " * 800, "--mode", "blog")[0], 0)
+        self.assertEqual(self.run_main("word " * 1300, "--mode", "blog")[0], 1)
+
     def test_target_overrides_mode_on_cli(self):
         code, output = self.run_main("word " * 10, "--mode", "news", "--target", "5-20")
         self.assertEqual(code, 0)

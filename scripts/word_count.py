@@ -22,7 +22,9 @@ MODE_TARGETS: dict[str, tuple[int, int]] = {
     "opinion": (700, 1200),
     "explainer": (1200, 2000),
     "experiment": (1000, 1800),
-    # A 3-5 minute read on the portfolio blog, which also counts code blocks and tables.
+    # A 3-5 minute read on a typical blog, which also counts code blocks and tables.
+    "blog": (550, 900),
+    # Older name for "blog", kept so existing commands keep working.
     "portfolio": (550, 900),
 }
 

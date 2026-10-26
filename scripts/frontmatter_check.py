@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the YAML frontmatter of a portfolio post and flag unfilled placeholders."""
+"""Validate the YAML frontmatter of a blog post and flag unfilled placeholders."""
 
 from __future__ import annotations
 
