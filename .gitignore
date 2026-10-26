@@ -1,7 +1,8 @@
-echo "__pycache__/
+# --- Python ---
+__pycache__/
 *.pyc
-.DS_Store
-.env" > .gitignore
+.env
+
 # --- Obsidian ---
 # Local UI/session state - noisy, not useful to share
 .obsidian/workspace.json

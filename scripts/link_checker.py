@@ -1,17 +1,67 @@
 #!/usr/bin/env python3
-"""Check every HTTP(S) URL in a Markdown article for a successful response."""
+"""Check every HTTP(S) URL in a Markdown article and report broken links by kind."""
 
 from __future__ import annotations
 
 import argparse
 import re
 import sys
+from dataclasses import dataclass
+from http.client import HTTPException
 from pathlib import Path
 from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 URL_PATTERN = re.compile(r"https?://[^\s<>\]\[\)]+")
-USER_AGENT = "tech-trend-writer-link-checker/1.0"
+USER_AGENT = "Mozilla/5.0 (compatible; tech-trend-writer-link-checker/2.0)"
+
+OK = "OK"
+REDIRECT = "REDIRECT"
+CLIENT_ERROR = "4XX"
+SERVER_ERROR = "5XX"
+TIMEOUT = "TIMEOUT"
+ERROR = "ERROR"
+OTHER = "OTHER"
+NOT_IN_SEARCH = "NOT-IN-SEARCH-RESULTS"
+
+SUMMARY_LABELS = {
+    CLIENT_ERROR: "4xx client error(s)",
+    SERVER_ERROR: "5xx server error(s)",
+    TIMEOUT: "timeout(s)",
+    ERROR: "connection error(s)",
+    OTHER: "other non-200 response(s)",
+    NOT_IN_SEARCH: "URL(s) absent from search results",
+}
+
+
+@dataclass
+class LinkResult:
+    url: str
+    category: str
+    status: int | None = None
+    method: str = ""
+    final_url: str = ""
+    redirects: int = 0
+    detail: str = ""
+
+    @property
+    def ok(self) -> bool:
+        return self.category in (OK, REDIRECT)
+
+
+class RedirectRecorder(HTTPRedirectHandler):
+    """Follow redirects as usual while recording each hop."""
+
+    def __init__(self) -> None:
+        self.hops: list[str] = []
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        new_request = super().redirect_request(req, fp, code, msg, headers, newurl)
+        if new_request is not None:
+            self.hops.append(newurl)
+            if req.get_method() == "HEAD":
+                new_request.method = "HEAD"
+        return new_request
 
 
 def extract_urls(text: str) -> list[str]:
@@ -24,32 +74,65 @@ def extract_urls(text: str) -> list[str]:
     return urls
 
 
-def request_status(url: str, timeout: float) -> tuple[bool, int | None, str]:
-    """Try HEAD, then GET when a server rejects or mishandles HEAD."""
+def classify_status(status: int) -> str:
+    if 400 <= status < 500:
+        return CLIENT_ERROR
+    if 500 <= status < 600:
+        return SERVER_ERROR
+    return OTHER
+
+
+def is_timeout(error: BaseException) -> bool:
+    if isinstance(error, TimeoutError):
+        return True
+    return isinstance(error, URLError) and isinstance(error.reason, TimeoutError)
+
+
+def check_url(url: str, timeout: float) -> LinkResult:
+    """Try HEAD first, then GET when HEAD does not return 200."""
+    result = LinkResult(url, ERROR, detail="No response")
     for method in ("HEAD", "GET"):
-        request = Request(url, method=method, headers={"User-Agent": USER_AGENT})
+        recorder = RedirectRecorder()
+        opener = build_opener(recorder)
+        request = Request(url, method=method, headers={"User-Agent": USER_AGENT, "Accept": "*/*"})
         try:
-            with urlopen(request, timeout=timeout) as response:
-                status = response.getcode()
+            with opener.open(request, timeout=timeout) as response:
+                status = response.status
+                hops = len(recorder.hops)
                 if status == 200:
-                    return True, status, method
-                if method == "HEAD":
-                    continue
-                return False, status, method
+                    category = REDIRECT if hops else OK
+                    return LinkResult(url, category, status, method, response.geturl(), hops)
+                result = LinkResult(url, classify_status(status), status, method, response.geturl(), hops)
         except HTTPError as error:
-            if method == "HEAD" and error.code in {403, 405, 501}:
-                continue
-            return False, error.code, method
-        except (URLError, TimeoutError, OSError) as error:
-            detail = error.reason if isinstance(error, URLError) else str(error)
-            return False, None, f"{method}: {detail}"
-    return False, None, "No response"
+            result = LinkResult(
+                url, classify_status(error.code), error.code, method, error.geturl() or url,
+                len(recorder.hops), str(error.reason),
+            )
+            error.close()
+        except (URLError, OSError, HTTPException, ValueError) as error:
+            if is_timeout(error):
+                # A server that hangs on HEAD will usually hang on GET too.
+                return LinkResult(url, TIMEOUT, method=method, detail=f"no response within {timeout:g}s")
+            reason = error.reason if isinstance(error, URLError) else error
+            result = LinkResult(url, ERROR, method=method, detail=str(reason) or type(error).__name__)
+    return result
+
+
+def format_result(result: LinkResult) -> str:
+    status = str(result.status) if result.status is not None else "-"
+    line = f"{result.category:<8} {status:<3} {result.method:<4} {result.url}"
+    if result.redirects:
+        plural = "redirect" if result.redirects == 1 else "redirects"
+        line += f" -> {result.final_url} ({result.redirects} {plural})"
+    if result.detail:
+        line += f" [{result.detail}]"
+    return line
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Check HTTP(S) links in a Markdown file.")
     parser.add_argument("article", type=Path, help="Path to the Markdown article")
-    parser.add_argument("--timeout", type=float, default=10.0, help="Per-request timeout in seconds")
+    parser.add_argument("--timeout", type=float, default=10.0, help="Per-request timeout in seconds (default: 10)")
     parser.add_argument(
         "--search-results",
         type=Path,
@@ -76,22 +159,28 @@ def main() -> int:
             return 2
         search_urls = set(extract_urls(args.search_results.read_text(encoding="utf-8")))
 
-    failures = 0
+    results: list[LinkResult] = []
     for url in urls:
         if search_urls is not None and url not in search_urls:
-            failures += 1
-            print(f"FAIL not-in-search-results {url}")
-            continue
-        ok, status, detail = request_status(url, args.timeout)
-        if ok:
-            print(f"OK   {status} ({detail}) {url}")
+            result = LinkResult(url, NOT_IN_SEARCH)
+            print(f"{NOT_IN_SEARCH} {url}")
         else:
-            failures += 1
-            label = str(status) if status is not None else "unreachable"
-            print(f"FAIL {label} ({detail}) {url}")
+            result = check_url(url, args.timeout)
+            print(format_result(result))
+        results.append(result)
 
-    if failures:
-        print(f"FAIL: {failures} of {len(urls)} link(s) are broken or unreachable.")
+    redirected = sum(1 for result in results if result.category == REDIRECT)
+    if redirected:
+        print(f"NOTE: {redirected} link(s) redirect; consider citing the final URL.")
+
+    broken = [result for result in results if not result.ok]
+    if broken:
+        counts = [
+            f"{count} {label}"
+            for category, label in SUMMARY_LABELS.items()
+            if (count := sum(1 for result in broken if result.category == category))
+        ]
+        print(f"FAIL: {len(broken)} of {len(urls)} link(s) are broken: {', '.join(counts)}.")
         return 1
     print(f"PASS: All {len(urls)} link(s) returned HTTP 200.")
     return 0
